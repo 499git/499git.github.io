@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>鬼滅の刃タイマー</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: sans-serif;
+            background-image: url('mugenjo.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #fff;
+        }
+        .character { display: none; margin: 20px; }
+        #akaza { width: 300px; }
+        #muzan { width: 300px; }
+        .controls { margin-top: 20px; }
+        button { font-size: 1.2em; padding: 10px 20px; cursor: pointer; }
+        #counter {
+            font-size: 3em; 
+            font-weight: bold;
+            color: #fff;
+        }
+        .icon {
+            display: none;
+            width: 50px;
+            height: 50px;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        .table-container {
+            width: 90%;
+            margin: 20px auto;
+            overflow-x: auto;
+            white-space: nowrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .count-cell {
+            display: inline-block;
+            width: 100px;
+            height: 80px;
+            text-align: center;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            box-sizing: border-box;
+            position: relative;
+            padding-top: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .count-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+        }
+        .table-icon {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 30px;
+        }
+        .akaza-icon-pos {
+            left: 5px;
+        }
+        .muzan-icon-pos {
+            right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>2人同時に出てくるのは？</h1>
+    <p>
+        カウント：<span id="counter">0</span>
+        <img id="akaza-icon" class="icon" src="akaza_icon.jpg" alt="猗窩座アイコン">
+        <img id="muzan-icon" class="icon" src="muzan_icon.jpg" alt="無惨アイコン">
+    </p>
+
+    <div class="controls">
+        <button id="startButton">スタート</button>
+        <button id="stopButton" style="display: none;">ストップ</button>
+        <button id="resetButton">リセット</button>
+    </div>
+
+    <img id="akaza" class="character" src="akaza.jpg" alt="猗窩座">
+    <img id="muzan" class="character" src="muzan.jpg" alt="無惨">
+    
+    <div class="table-container" id="timelineTable"></div>
+
+    <script>
+        let count = 0;
+        let timerId = null;
+
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const resetButton = document.getElementById('resetButton');
+        const counterElement = document.getElementById('counter');
+        const akazaImg = document.getElementById('akaza');
+        const muzanImg = document.getElementById('muzan');
+        const akazaIcon = document.getElementById('akaza-icon');
+        const muzanIcon = document.getElementById('muzan-icon');
+        const timelineTable = document.getElementById('timelineTable');
+
+        function startTimer() {
+            if (timerId !== null) return;
+            
+            startButton.style.display = 'none';
+            stopButton.style.display = 'inline-block';
+
+            timerId = setInterval(() => {
+                count++;
+                counterElement.textContent = count;
+
+                akazaIcon.style.display = 'none';
+                muzanIcon.style.display = 'none';
+
+                const newCell = document.createElement('div');
+                newCell.className = 'count-cell';
+                newCell.innerHTML = `<span class="count-number">${count}</span>`;
+                timelineTable.appendChild(newCell);
+
+                if (count % 12 === 0) {
+                    akazaImg.style.display = 'inline-block';
+                    muzanImg.style.display = 'inline-block';
+                    akazaIcon.style.display = 'inline-block';
+                    muzanIcon.style.display = 'inline-block';
+                    
+                    const akazaTableIcon = document.createElement('img');
+                    akazaTableIcon.src = 'akaza_icon.jpg';
+                    akazaTableIcon.className = 'table-icon akaza-icon-pos';
+                    newCell.appendChild(akazaTableIcon);
+                    
+                    const muzanTableIcon = document.createElement('img');
+                    muzanTableIcon.src = 'muzan_icon.jpg';
+                    muzanTableIcon.className = 'table-icon muzan-icon-pos';
+                    newCell.appendChild(muzanTableIcon);
+
+                } 
+                else if (count % 4 === 0) {
+                    akazaImg.style.display = 'inline-block';
+                    muzanImg.style.display = 'none';
+                    akazaIcon.style.display = 'inline-block';
+                    
+                    const akazaTableIcon = document.createElement('img');
+                    akazaTableIcon.src = 'akaza_icon.jpg';
+                    akazaTableIcon.className = 'table-icon akaza-icon-pos';
+                    newCell.appendChild(akazaTableIcon);
+                } 
+                else if (count % 6 === 0) {
+                    muzanImg.style.display = 'inline-block';
+                    akazaImg.style.display = 'none';
+                    muzanIcon.style.display = 'inline-block';
+                    
+                    const muzanTableIcon = document.createElement('img');
+                    muzanTableIcon.src = 'muzan_icon.jpg';
+                    muzanTableIcon.className = 'table-icon muzan-icon-pos';
+                    newCell.appendChild(muzanTableIcon);
+                }
+                else {
+                    akazaImg.style.display = 'none';
+                    muzanImg.style.display = 'none';
+                }
+
+                timelineTable.scrollLeft = timelineTable.scrollWidth;
+
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerId === null) return;
+            
+            clearInterval(timerId);
+            timerId = null;
+
+            startButton.style.display = 'inline-block';
+            stopButton.style.display = 'none';
+        }
+
+        function resetTimer() {
+            stopTimer(); // タイマーを停止
+            count = 0;
+            counterElement.textContent = '0';
+            timelineTable.innerHTML = '';
+            akazaImg.style.display = 'none';
+            muzanImg.style.display = 'none';
+            akazaIcon.style.display = 'none';
+            muzanIcon.style.display = 'none';
+        }
+
+        startButton.addEventListener('click', startTimer);
+        stopButton.addEventListener('click', stopTimer);
+        resetButton.addEventListener('click', resetTimer);
+    </script>
+
+</body>
+</html>
